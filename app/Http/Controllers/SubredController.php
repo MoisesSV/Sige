@@ -172,11 +172,9 @@ class SubredController extends Controller
                 'required' => 'El campo :attribute es requerido.'
             ]
     );
-        //Validación para que el número de Vlan unicamente se pueda repetir, si su estado activo en "0"
         $subred = new Subred();
         $Nvlan = Subred ::select('subredes.vlan','subredes.activo')->get();
         $tamano = count($Nvlan);
-
         //Datos extraídos del formulario para almacenar
         $subred->vlan = $request->input('vlan');
         $subred->rangoInicial = $request->input('rangoInicial');
@@ -223,6 +221,7 @@ class SubredController extends Controller
 
         $subredes = Subred::where('activo', '=', 1)
             ->get();
+
         $subredElegida = Subred::all()
             ->where('subredes.id', '=', $subred)
             ->get();
@@ -241,18 +240,13 @@ class SubredController extends Controller
             'vs_equipos.mac',
             'ips.id_equipo',
             'vs_equipos.tipo_equipo',
-            'vs_equipos.area'
-        )
+            'vs_equipos.area')
             ->where('ips.Subred_id', '=', $subred)->get();
 
-
-        return view('subredes.index')
-            ->with('subredes', $subred)
-            ->with('editar', $editar)
-            ->with('subredes', $subredes);
-
-
-
+            return view('subredes.index')
+                ->with('subredes', $subred)
+                ->with('editar', $editar)
+                ->with('subredes', $subredes);
     }
 
     /**
@@ -287,12 +281,13 @@ class SubredController extends Controller
                 ],
                 'descripcion' => 'required',
             ],[
-                'unique' => 'La el número de VLAN ya fue registrado..',
+                'unique' => 'El número de VLAN ya fue registrado..',
                 'required' => 'El campo es requerido'
             ]);
             $subred = Subred::find($id);
             $subred->vlan = $request->input('vlan');
             $subred->descripcion = $request->input('descripcion');
+            $subred->nvlan = $request->input('vlan');
             $subred->disponible = 'si';
             $subred->update();
 
@@ -326,7 +321,6 @@ class SubredController extends Controller
         ->where('ips.activo', '=', 0)->get();
 
         $ip = count($ips);
-
         //comparación para conocer si una VLAN está asignada a una o varias IPs
             if($ip == $ipT){
 
@@ -369,8 +363,8 @@ class SubredController extends Controller
             ->with('subredElegida', $subredElegida);
     }
 
-
     public function disponible($id){
+
         $Ips = Ip::join('subredes', 'ips.Subred_id', '=', 'subredes.id')
         ->select('ips.*')
         ->Where('ips.Subred_id', '=', $id)
@@ -378,8 +372,7 @@ class SubredController extends Controller
         ->Where('ips.ocupada','=','no')
         ->get();
 
-        $ips =
-        Ip::join('subredes', 'ips.Subred_id', '=', 'subredes.id')
+        $ips = Ip::join('subredes', 'ips.Subred_id', '=', 'subredes.id')
         ->select('ips.ocupada')
         ->Where('ips.Subred_id', '=', $id)
         ->Where('ips.activo', '=', 1)
@@ -387,7 +380,7 @@ class SubredController extends Controller
         ->get();
         $num = count($ips);
 
-            $subred = Subred::find($id,['id']);
+        $subred = Subred::find($id,['id']);
 
             return view('subredes.disponibles')
                 ->with('Ips', $Ips)
@@ -433,7 +426,6 @@ class SubredController extends Controller
         ->with('Ips', $Ips)
         ->with('num', $num)
         ->with('subred',$subred);
-
     }
 
 }

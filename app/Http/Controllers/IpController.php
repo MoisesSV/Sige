@@ -134,9 +134,8 @@ class IpController extends Controller{
         //guarda un nuevo registro a partir de la vista create.
         $validateData = $this->validate($request,[
             //validación del formulario
-        'id_equipo' => 'required |unique:ips,id_equipo'
-
-        ],[
+        'id_equipo' => 'required |unique:ips,id_equipo']
+        ,[
             'unique' =>'El Equipo con ese :attribute ya fue asignado.',
             'required' => 'El campo :attribute es requerido'
         ]);
@@ -145,7 +144,6 @@ class IpController extends Controller{
                 ->select('ips.id_equipo')
                 ->where('vs_equipos.id', '=', 'ips.id_equipo')
                 ->get();
-
         //validación para no permitir que un equipo se ha asignado dos veces a una IP, tomando como excepción el valor "0" que representa sin
             for($i = 0; $i = $equipos; $i++ )
                     $ip = new Ip();
@@ -165,7 +163,6 @@ class IpController extends Controller{
                      return redirect()->route('ips.index')->with(array('error' => 'El equipo ya fue asignado a una IP.'));
 
             }
-
     }
 
     /**
