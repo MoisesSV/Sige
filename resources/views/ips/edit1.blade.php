@@ -161,9 +161,9 @@
                                                     document.getElementById("usuario").innerHTML =  obj.nombre;
                                                 //  recuperar el tipo de equipo
                                                     document.getElementById("tipo").innerHTML = obj.tipo_equipo;
-                                                // reuperar el UDG ID
+                                                // recuperar el UDG ID
                                                     document.getElementById("udg_id").innerHTML = obj.udg_id;
-                                                //  reuperar el ID del Equipo
+                                                //  recuperar el ID del Equipo
                                                 document.getElementById("id_equipo").value = obj.id;
                                                 //redireccionamiento para editar los datos del equipo por ID.
                                                     var url = "{{ route('equipos.edit', ':id') }}";

@@ -7,6 +7,7 @@ use Illuminate\Validation\Rule;
 use App\Models\VsEquipo;
 use App\Models\Empleado;
 use Nette\Utils\Strings;
+use PHPUnit\Framework\Constraint\Count;
 
 class SubredController extends Controller
 {
@@ -421,6 +422,7 @@ class SubredController extends Controller
         ->Where('ips.ocupada', '=', 'si')
         ->get();
         $num = count($ips);
+
 
         return view('subredes.ocupadas')
         ->with('Ips', $Ips)

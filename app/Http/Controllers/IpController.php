@@ -58,7 +58,7 @@ class IpController extends Controller{
             ->select('empleados.nombre','vs_equipos.*')
             ->where('vs_equipos.activo', '=', 1 )
         // Filtro de equipos que solo necesitan una IP
-            ->whereIn('vs_equipos.tipo_equipo', ['Access Point', 'Cámara', 'Cámara de Red', 'CPU', 'Impresoras', 'Multifuncional', 'Laptop', 'Router', 'Servidor', 'Switch', 'Télefonos'])->orderBy('tipo_equipo')
+            ->whereIn('vs_equipos.tipo_equipo', ['Access Point', 'Cámara', 'Cámara de Red', 'CPU', 'Impresoras', 'Multifuncional', 'Laptop', 'Router', 'Servidor', 'Switch', 'Télefonos'])->orderBy('id')
             ->get();
                     return view('ips.create')
                         ->with('ips', $ips)
@@ -267,7 +267,7 @@ class IpController extends Controller{
                 'vs_equipos.tipo_equipo',
                 'vs_equipos.area')
                 ->whereIn('vs_equipos.tipo_equipo', ['Access Point', 'Cámara', 'Cámara de Red', 'CPU', 'Impresoras', 'Multifuncional', 'Laptop', 'Router', 'Servidor', 'Switch', 'Télefonos'])
-                ->orderBy('tipo_equipo')
+                ->orderBy('id')
                 ->get();
 
             $subredes = Subred::where('activo', '=', 1)->get();
@@ -465,8 +465,7 @@ class IpController extends Controller{
                     ->with('ipElegida',$ipElegida);
     }
 
-    public function desasignarEquipo($id)
-    {
+    public function desasignarEquipo($id){
 
         $ip = Ip::find($id);
         $ip->id_equipo  = 0;
