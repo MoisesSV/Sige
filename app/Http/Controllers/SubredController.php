@@ -168,7 +168,7 @@ class SubredController extends Controller
             'descripcion'=>'required'
         ],
             [
-                'unique' => 'El número de vlan ya es registrado',
+                'unique' => 'El número de vlan ya está registrado',
                 'required' => 'El campo :attribute es requerido.'
             ]
     );
@@ -281,7 +281,7 @@ class SubredController extends Controller
                 ],
                 'descripcion' => 'required',
             ],[
-                'unique' => 'El número de VLAN ya fue registrado..',
+                'unique' => 'El número de VLAN ya fue registrado.',
                 'required' => 'El campo es requerido'
             ]);
             $subred = Subred::find($id);
@@ -334,7 +334,7 @@ class SubredController extends Controller
 
             return redirect()->route('subredes.index')->with(array(
                 "error" => "La subred que trata de eliminar está activa en una o varias IP'S,
-                    para eliminarla necesita borrar todas las IP'S"));
+                    para eliminarla necesita borrar todas las IP'S correspondientes a la VLAN "));
         }
 
     }
