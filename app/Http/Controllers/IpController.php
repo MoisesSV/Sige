@@ -306,7 +306,7 @@ class IpController extends Controller{
 
 
 
-        return $vs_equipos;
+        //return $vs_equipos;
 
 
             //return '<br>'.$equipos.'<br><br>'.$vs_equipos;
