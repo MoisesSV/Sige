@@ -290,7 +290,7 @@ class IpController extends Controller{
             Empleado::raw('IFNULL(empleados.nombre, "Sin nombre disponible") AS nombre')
         )
         ->leftJoin('empleados', 'empleados.id', '=', 'vs_equipos.id_resguardante')
-        ->whereIn('vs_equipos.tipo_equipo', ['Access Point', 'Cámara', 'Cámara de Red', 'CPU', 'Impresoras', 'Multifuncional', 'Laptop', 'Router', 'Servidor', 'Switch', 'Teléfono'])
+        ->whereIn('vs_equipos.tipo_equipo', ['Access Point', 'Cámara', 'Cámara de Red', 'CPU', 'Impresora', 'Multifuncional', 'Laptop', 'Router', 'Servidor', 'Switch', 'Teléfono'])
         ->groupBy('vs_equipos.id')
         ->get();
             // $vs_equipos ahora contiene los resultados sin los equipos presentes en $equipos
