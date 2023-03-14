@@ -1,6 +1,8 @@
 <?php
 namespace App\Http\Controllers;
 use App\Models\Empleado;
+use App\Models\VsDatosIp;
+use App\Models\Equipo;
 use App\Models\Ip;
 use App\Models\Subred;
 use App\Models\VsIps;
@@ -54,16 +56,30 @@ class IpController extends Controller{
         $ips = Ip::all();
         $subred = Subred::where('activo', '=', 1)->get();
         //sentencia utilizada para visualizar los datos del equipo usando la tabla empleados y la vista vs_equipo.
-        $vsequipos = VsEquipo::join('empleados' , 'empleados.id' , '=' , 'vs_equipos.id_resguardante')
-            ->select('empleados.nombre','vs_equipos.*')
-            ->where('vs_equipos.activo', '=', 1 )
-        // Filtro de equipos que solo necesitan una IP
-            ->whereIn('vs_equipos.tipo_equipo', ['Access Point', 'Cámara', 'Cámara de Red', 'CPU', 'Impresoras', 'Multifuncional', 'Laptop', 'Router', 'Servidor', 'Switch', 'Télefonos'])->orderBy('id')
+        $vs_equipos = VsEquipo::select(
+            'vs_equipos.id',
+            'vs_equipos.id_resguardante',
+            Empleado::raw('COUNT(empleados.id) as empleados_count'),
+            'vs_equipos.udg_id',
+            'vs_equipos.numero_serie',
+            'vs_equipos.mac',
+            'vs_equipos.tipo_equipo',
+            'vs_equipos.area',
+            'empleados.nombre' // Agregamos el campo nombre de la tabla empleados
+        )
+            ->leftJoin(
+                'empleados',
+                'empleados.id',
+                '=',
+                'vs_equipos.id_resguardante'
+            )
+            ->whereIn('vs_equipos.tipo_equipo', ['Access Point', 'Cámara', 'Cámara de Red', 'CPU', 'Impresoras', 'Multifuncional', 'Laptop', 'Router', 'Servidor', 'Switch', 'Teléfono'])
+            ->groupBy('vs_equipos.id')
             ->get();
                     return view('ips.create')
                         ->with('ips', $ips)
                         ->with('subredes', $subred)
-                        ->with('vs_equipos', $vsequipos);
+                        ->with('vs_equipos', $vs_equipos);
     }
 
     public function cargarDT($consulta)
@@ -180,19 +196,23 @@ class IpController extends Controller{
                 ->where('ips.id', '=', $id)->first();
         //Sentencia para visualizar los datos uniendo las tablas ips, empleados, y la vita vs_equipo, utilizado en la vista create y edit
         $edit = Ip::join('vs_equipos', 'vs_equipos.id', '=', 'ips.id_equipo')
-                ->join('empleados', 'empleados.id', '=', 'vs_equipos.id_resguardante')
-                ->select(
-                    'vs_equipos.id',
-                    'ips.id',
-                    'vs_equipos.id_resguardante',
-                    'empleados.nombre',
-                    'vs_equipos.udg_id',
-                    'vs_equipos.numero_serie',
-                    'vs_equipos.mac',
-                    'ips.id_equipo',
-                    'vs_equipos.tipo_equipo',
-                    'vs_equipos.area')
-                ->where('ips.id', '=', $id)->first();
+        ->leftJoin('empleados', 'empleados.id', '=', 'vs_equipos.id_resguardante')
+        ->select(
+            'vs_equipos.id',
+            'ips.id',
+            'vs_equipos.id_resguardante',
+            Empleado::raw('IFNULL(empleados.nombre, "Sin nombre disponible") AS nombre'), // Agregamos la condición para mostrar "sin nombre" si el nombre del empleado es nulo
+            'vs_equipos.udg_id',
+            'vs_equipos.numero_serie',
+            'vs_equipos.mac',
+            'ips.id_equipo',
+            'vs_equipos.tipo_equipo',
+            'vs_equipos.area'
+        )
+        ->where('ips.id',
+            '=',
+            $id
+        )->first();
         //Sentencia para visualizar los datos uniendo las tablas ips, empleados, y la vita vs_equipo, utilizado en la vista create
         $vs_equipos = VsEquipo::join('empleados', 'empleados.id', '=', 'vs_equipos.id_resguardante')
                 ->select(
@@ -255,20 +275,39 @@ class IpController extends Controller{
                 'vs_equipos.tipo_equipo',
                 'vs_equipos.area')
                 ->where('ips.id', '=', $id)->first();
-            //Sentencia para visualizar los datos uniendo las tablas ips, empleados, y la vista vs_equipo, utilizado en la vista create
-            $vs_equipos = VsEquipo::join('empleados', 'empleados.id', '=', 'vs_equipos.id_resguardante')
-                ->select(
-                'vs_equipos.id',
-                'vs_equipos.id_resguardante',
-                'empleados.nombre',
-                'vs_equipos.udg_id',
-                'vs_equipos.numero_serie',
-                'vs_equipos.mac',
-                'vs_equipos.tipo_equipo',
-                'vs_equipos.area')
-                ->whereIn('vs_equipos.tipo_equipo', ['Access Point', 'Cámara', 'Cámara de Red', 'CPU', 'Impresoras', 'Multifuncional', 'Laptop', 'Router', 'Servidor', 'Switch', 'Télefonos'])
-                ->orderBy('id')
-                ->get();
+
+        $equipos = Ip::select('id_equipo')->get();
+
+        $vs_equipos = VsEquipo::select(
+            'vs_equipos.id',
+            'vs_equipos.id_resguardante',
+            Empleado::raw('COUNT(empleados.id) as empleados_count'),
+            'vs_equipos.udg_id',
+            'vs_equipos.numero_serie',
+            'vs_equipos.mac',
+            'vs_equipos.tipo_equipo',
+            'vs_equipos.area',
+            Empleado::raw('IFNULL(empleados.nombre, "Sin nombre disponible") AS nombre')
+        )
+        ->leftJoin('empleados', 'empleados.id', '=', 'vs_equipos.id_resguardante')
+        ->whereIn('vs_equipos.tipo_equipo', ['Access Point', 'Cámara', 'Cámara de Red', 'CPU', 'Impresoras', 'Multifuncional', 'Laptop', 'Router', 'Servidor', 'Switch', 'Teléfono'])
+        ->groupBy('vs_equipos.id')
+        ->get();
+            // $vs_equipos ahora contiene los resultados sin los equipos presentes en $equipos
+        foreach ($vs_equipos as $key => $vs_equipo) {
+            foreach ($equipos as $equipo) {
+                if ($vs_equipo->id === $equipo->id_equipo) {
+                    unset($vs_equipos[$key]);
+                }
+            }
+        }
+
+
+
+
+
+
+            //return '<br>'.$equipos.'<br><br>'.$vs_equipos;
 
             $subredes = Subred::where('activo', '=', 1)->get();
 

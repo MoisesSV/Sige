@@ -229,20 +229,31 @@ class SubredController extends Controller
 
         $subred = $this->cargarDT($subredElegida);
 
-        $editar = Ip::join('vs_equipos', 'vs_equipos.id', '=', 'ips.id_equipo')
-        ->join('empleados', 'empleados.id', '=', 'vs_equipos.id_resguardante')
+        $editar =Ip::join('vs_equipos', 'vs_equipos.id', '=', 'ips.id_equipo')
+        ->leftJoin('empleados', 'empleados.id', '=', 'vs_equipos.id_resguardante')
+        ->join('subredes', 'ips.Subred_id', '=', 'subredes.id')
         ->select(
-            'vs_equipos.id',
-            'ips.id_equipo',
-            'vs_equipos.id_resguardante',
-            'empleados.nombre',
-            'vs_equipos.udg_id',
+            'subredes.vlan',
+            'ips.Subred_id',
+            'ips.ip',
+            'ips.id',
+            'ips.activo',
+            'ips.ocupada',
             'vs_equipos.numero_serie',
             'vs_equipos.mac',
-            'ips.id_equipo',
             'vs_equipos.tipo_equipo',
-            'vs_equipos.area')
-            ->where('ips.Subred_id', '=', $subred)->get();
+            'vs_equipos.area',
+            'vs_equipos.udg_id',
+            'empleados.nombre'
+        )
+            ->where('ips.Subred_id', '=', $id)
+            ->where('ips.activo', '=', 1)
+            ->where('ips.ocupada', '=', 'si')
+            ->where(function ($query) {
+                $query->where('vs_equipos.id_resguardante', '=', 0)
+                ->orWhereNotNull('empleados.id');
+            })
+            ->get();
 
             return view('subredes.index')
                 ->with('subredes', $subred)
@@ -392,42 +403,48 @@ class SubredController extends Controller
 
     public function ocupadas($id){
 
+
         $subred = Subred::find($id, ['id']);
         $Ips = Ip::join('vs_equipos', 'vs_equipos.id', '=', 'ips.id_equipo')
-            ->join('empleados', 'empleados.id', '=', 'vs_equipos.id_resguardante')
-            ->join('subredes', 'ips.Subred_id', '=', 'subredes.id')
-            ->select(
-                'subredes.vlan',
-                'ips.Subred_id',
-                'ips.ip',
-                'ips.id',
-                'ips.activo',
-                'ips.ocupada',
-                'vs_equipos.numero_serie',
-                'vs_equipos.mac',
-                'vs_equipos.tipo_equipo',
-                'vs_equipos.area',
-                'vs_equipos.udg_id',
-                'empleados.nombre',
-            )
+        ->leftJoin('empleados', 'empleados.id', '=', 'vs_equipos.id_resguardante')
+        ->join('subredes', 'ips.Subred_id', '=', 'subredes.id')
+        ->select(
+            'subredes.vlan',
+            'ips.Subred_id',
+            'ips.ip',
+            'ips.id',
+            'ips.activo',
+            'ips.ocupada',
+            'vs_equipos.numero_serie',
+            'vs_equipos.mac',
+            'vs_equipos.tipo_equipo',
+            'vs_equipos.area',
+            'vs_equipos.udg_id',
+            Empleado::raw('IFNULL(empleados.nombre, "Sin nombre disponible") AS nombre') // Agregar la condición para mostrar "sin nombre" si el nombre del empleado es nulo
+        )
+            ->where('ips.Subred_id', '=', $id)
+            ->where('ips.activo', '=', 1)
+            ->where('ips.ocupada', '=', 'si')
+            ->where(function ($query) {
+                $query->where('vs_equipos.id_resguardante', '=', 0)
+                ->orWhereNotNull('empleados.id');
+            })
+            ->get();
+
+
+        $ips =
+            Ip::join('subredes', 'ips.Subred_id', '=', 'subredes.id')
+            ->select('ips.ocupada')
             ->Where('ips.Subred_id', '=', $id)
             ->Where('ips.activo', '=', 1)
             ->Where('ips.ocupada', '=', 'si')
             ->get();
-        $ips =
-        Ip::join('subredes', 'ips.Subred_id', '=', 'subredes.id')
-        ->select('ips.ocupada')
-        ->Where('ips.Subred_id', '=', $id)
-        ->Where('ips.activo', '=', 1)
-        ->Where('ips.ocupada', '=', 'si')
-        ->get();
         $num = count($ips);
 
 
         return view('subredes.ocupadas')
-        ->with('Ips', $Ips)
-        ->with('num', $num)
-        ->with('subred',$subred);
+            ->with('Ips', $Ips)
+            ->with('num', $num)
+            ->with('subred', $subred);
     }
-
 }
