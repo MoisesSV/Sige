@@ -73,7 +73,7 @@ class IpController extends Controller{
                 '=',
                 'vs_equipos.id_resguardante'
             )
-            ->whereIn('vs_equipos.tipo_equipo', ['Access Point', 'Cámara', 'Cámara de Red', 'CPU', 'Impresoras', 'Multifuncional', 'Laptop', 'Router', 'Servidor', 'Switch', 'Teléfono'])
+            ->whereIn('vs_equipos.tipo_equipo', ['Access Point', 'Cámara', 'Cámara de Red', 'CPU', 'Impresora', 'Multifuncional', 'Laptop', 'Router', 'Servidor', 'Switch', 'Teléfono'])
             ->groupBy('vs_equipos.id')
             ->get();
                     return view('ips.create')
@@ -293,6 +293,8 @@ class IpController extends Controller{
         ->whereIn('vs_equipos.tipo_equipo', ['Access Point', 'Cámara', 'Cámara de Red', 'CPU', 'Impresora', 'Multifuncional', 'Laptop', 'Router', 'Servidor', 'Switch', 'Teléfono'])
         ->groupBy('vs_equipos.id')
         ->get();
+
+        
             // $vs_equipos ahora contiene los resultados sin los equipos presentes en $equipos
         foreach ($vs_equipos as $key => $vs_equipo) {
             foreach ($equipos as $equipo) {
@@ -304,7 +306,7 @@ class IpController extends Controller{
 
 
 
-
+        return $vs_equipos;
 
 
             //return '<br>'.$equipos.'<br><br>'.$vs_equipos;
